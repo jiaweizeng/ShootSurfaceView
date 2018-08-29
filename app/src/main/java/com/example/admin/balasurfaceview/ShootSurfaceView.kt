@@ -11,7 +11,9 @@ import java.util.*
 /**
  * Created by zjw on 2018/8/28.
  */
-open class ShootSurfaceView : SurfaceView, SurfaceHolder.Callback {
+open class ShootSurfaceView @JvmOverloads constructor(
+        context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
+) : SurfaceView(context, attrs, defStyleAttr), SurfaceHolder.Callback {
 
     private var score = 0 // 得分
     private val intervel = 1000 / 100 // 时间间隔(毫秒)
@@ -69,9 +71,7 @@ open class ShootSurfaceView : SurfaceView, SurfaceHolder.Callback {
     }*/
     private lateinit var mHero: Hero
 
-    constructor(context: Context?) : this(context, null)
-
-    constructor(context: Context?, attrs: AttributeSet?) : super(context, attrs) {
+    init {
         initView()
     }
 
