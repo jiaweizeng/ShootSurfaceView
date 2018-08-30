@@ -6,6 +6,7 @@ import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.SurfaceHolder
 import android.view.SurfaceView
+import com.example.admin.balasurfaceview.BitmapUtil.scaleBitmap
 import java.util.*
 
 /**
@@ -39,18 +40,9 @@ open class ShootSurfaceView @JvmOverloads constructor(
     private var mFlying = arrayOfNulls<FlyingObject>(0)
 
 
-    /*private val  mStart by lazy {
-        BitmapFactory.decodeResource(resources,R.mipmap.start)
-    }*/
     private val mBee by lazy {
         BitmapFactory.decodeResource(resources, R.mipmap.bee)
     }
-    /* private val  mPause by lazy {
-         BitmapFactory.decodeResource(resources,R.mipmap.pause)
-     }*/
-    /*private val  mGameOver by lazy {
-        BitmapFactory.decodeResource(resources,R.mipmap.gameover)
-    }*/
     private val mBullet by lazy {
         BitmapFactory.decodeResource(resources, R.mipmap.bullet)
     }
@@ -65,9 +57,6 @@ open class ShootSurfaceView @JvmOverloads constructor(
         BitmapFactory.decodeResource(resources, R.mipmap.airplane)
     }
 
-    /*private val mHero by lazy {
-        Hero(mHero0,mHero1,mBullet)
-    }*/
     private lateinit var mHero: Hero
 
     init {
@@ -86,13 +75,14 @@ open class ShootSurfaceView @JvmOverloads constructor(
     override fun surfaceChanged(holder: SurfaceHolder?, format: Int, width: Int, height: Int) {
         screenWidth = width
         screenHeight = height
-        mHero.x=(width-mHero0.width)/2
-        mHero.y=height-mHero0.height
-        mBackGround = BitmapUtil.scaleBitmap(BitmapFactory.decodeResource(resources, R.mipmap.background), width, height)
-        mStart = BitmapUtil.scaleBitmap(BitmapFactory.decodeResource(resources, R.mipmap.start), width, height)
-        mPause = BitmapUtil.scaleBitmap(BitmapFactory.decodeResource(resources, R.mipmap.pause), width, height)
-        mGameOver = BitmapUtil.scaleBitmap(BitmapFactory.decodeResource(resources, R.mipmap.gameover), width, height)
-
+        mHero.x = (width - mHero0.width) / 2
+        mHero.y = height - mHero0.height
+        BitmapUtil().apply {
+            mBackGround = scaleBitmap(BitmapFactory.decodeResource(resources, R.mipmap.background), width, height)
+            mStart = scaleBitmap(BitmapFactory.decodeResource(resources, R.mipmap.start), width, height)
+            mPause = scaleBitmap(BitmapFactory.decodeResource(resources, R.mipmap.pause), width, height)
+            mGameOver = scaleBitmap(BitmapFactory.decodeResource(resources, R.mipmap.gameover), width, height)
+        }
     }
 
     override fun surfaceDestroyed(holder: SurfaceHolder?) {
@@ -108,8 +98,8 @@ open class ShootSurfaceView @JvmOverloads constructor(
         Thread {
             while (mIsDrawing) {
                 drawImage()
+                Thread.sleep(16)
             }
-            Thread.sleep(16)
         }.start()
 
 
@@ -123,7 +113,6 @@ open class ShootSurfaceView @JvmOverloads constructor(
                     outOfBoundsAction() // 删除越界飞行物及子弹
                     checkGameOverAction() // 检查游戏结束
                 }
-//                invalidate()// 重绘，调用paint()方法
             }
 
         }, intervel.toLong(), intervel.toLong())
@@ -314,38 +303,38 @@ open class ShootSurfaceView @JvmOverloads constructor(
         try {
 
             mCanvas = holder.lockCanvas()
-            /** 画背景 */
-            mCanvas.drawBitmap(mBackGround, 0f, 0f, mPaint)
-//            mCanvas.drawBitmap(mAirPlane,mAirPlane.width.toFloat(),mAirPlane.height.toFloat(),mPaint)
-            /** 画英雄机 */
-            mCanvas.drawBitmap(mHero.image, mHero.x.toFloat(), mHero.y.toFloat(), mPaint)
-            /** 画子弹 */
-            for (bb in mBullets) {
-                bb?.let {
-                    mCanvas.drawBitmap(bb.image, (bb.x.minus(bb.width / 2)).toFloat(),
-                            bb.y.toFloat(), mPaint)
+            mCanvas.apply {
+                /** 画背景 */
+                drawBitmap(mBackGround, 0f, 0f, mPaint)
+                /** 画英雄机 */
+                drawBitmap(mHero.image, mHero.x.toFloat(), mHero.y.toFloat(), mPaint)
+                /** 画子弹 */
+                for (bb in mBullets) {
+                    bb?.let {
+                        drawBitmap(bb.image, (bb.x.minus(bb.width / 2)).toFloat(),
+                                bb.y.toFloat(), mPaint)
+                    }
                 }
-            }
-            /** 画飞行物 */
-            for (ff in mFlying) {
-                ff?.let {
-                    mCanvas.drawBitmap(ff.image, ff.x.toFloat(), ff.y.toFloat(), mPaint)
+                /** 画飞行物 */
+                for (ff in mFlying) {
+                    ff?.let {
+                        drawBitmap(ff.image, ff.x.toFloat(), ff.y.toFloat(), mPaint)
+                    }
                 }
+                /** 画分数 */
+                val x = 20 // x坐标
+                var y = 35// y坐标
+
+                mPaint?.textSize = 34f
+
+                mPaint?.color = Color.parseColor("#FFFFFFFF")
+
+                drawText("SCORE:$score", x.toFloat(), y.toFloat(), mPaint) // 画分数
+                y += 40 // y坐标增20
+                drawText("LIFE:" + mHero.life, x.toFloat(), y.toFloat(), mPaint) // 画命
+
+                paintState()
             }
-
-            /** 画分数 */
-            val x = 20 // x坐标
-            var y = 35// y坐标
-
-            mPaint?.textSize = 34f
-
-            mPaint?.color = Color.parseColor("#FFFFFFFF")
-
-            mCanvas.drawText("SCORE:$score", x.toFloat(), y.toFloat(), mPaint) // 画分数
-            y += 40 // y坐标增20
-            mCanvas.drawText("LIFE:" + mHero.life, x.toFloat(), y.toFloat(), mPaint) // 画命
-
-            paintState()
 
 
         } catch (e: Exception) {
@@ -368,6 +357,7 @@ open class ShootSurfaceView @JvmOverloads constructor(
             -> mCanvas.drawBitmap(mPause, 0f, 0f, mPaint)
             GAME_OVER // 游戏终止状态
             -> mCanvas.drawBitmap(mGameOver, 0f, 0f, mPaint)
+
         }
     }
 
