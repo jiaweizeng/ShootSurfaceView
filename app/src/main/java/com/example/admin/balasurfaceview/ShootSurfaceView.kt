@@ -17,7 +17,6 @@ open class ShootSurfaceView @JvmOverloads constructor(
 
     private var score = 0 // 得分
     private val intervel = 1000 / 100 // 时间间隔(毫秒)
-    private lateinit var mSurfaceHolder: SurfaceHolder
     private lateinit var mCanvas: Canvas//绘图的画布
     private var mIsDrawing: Boolean = false//控制绘画线程的标志位
 
@@ -76,13 +75,11 @@ open class ShootSurfaceView @JvmOverloads constructor(
     }
 
     private fun initView() {
-        mSurfaceHolder = holder//获取SurfaceHolder对象
-        mSurfaceHolder.addCallback(this)//注册SurfaceHolder的回调方法
+        holder.addCallback(this)//注册SurfaceHolder的回调方法
         isFocusable = true
         isFocusableInTouchMode = true
         keepScreenOn = true
         mHero = Hero(mHero0, mHero1, mBullet)
-
     }
 
 
@@ -100,7 +97,7 @@ open class ShootSurfaceView @JvmOverloads constructor(
 
     override fun surfaceDestroyed(holder: SurfaceHolder?) {
         mIsDrawing = false
-        mSurfaceHolder.removeCallback(this)//界面销毁的时候注销回调
+        holder?.removeCallback(this)//界面销毁的时候注销回调
     }
 
     override fun surfaceCreated(holder: SurfaceHolder?) {
@@ -316,7 +313,7 @@ open class ShootSurfaceView @JvmOverloads constructor(
     private fun drawImage() {
         try {
 
-            mCanvas = mSurfaceHolder.lockCanvas()
+            mCanvas = holder.lockCanvas()
             /** 画背景 */
             mCanvas.drawBitmap(mBackGround, 0f, 0f, mPaint)
 //            mCanvas.drawBitmap(mAirPlane,mAirPlane.width.toFloat(),mAirPlane.height.toFloat(),mPaint)
@@ -355,7 +352,7 @@ open class ShootSurfaceView @JvmOverloads constructor(
             e.printStackTrace()
         } finally {
             try {
-                mSurfaceHolder.unlockCanvasAndPost(mCanvas)//保证每次都将绘图的内容提交
+                holder.unlockCanvasAndPost(mCanvas)//保证每次都将绘图的内容提交
             } catch (e: Exception) {
             }
         }
@@ -375,7 +372,7 @@ open class ShootSurfaceView @JvmOverloads constructor(
     }
 
     fun release() {
-        mSurfaceHolder.removeCallback(this)//界面销毁的时候注销回调
+        holder.removeCallback(this)//界面销毁的时候注销回调
     }
 
 
